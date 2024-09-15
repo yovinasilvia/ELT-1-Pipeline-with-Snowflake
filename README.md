@@ -55,6 +55,7 @@ Changes the current role to dbt_role, so that subsequent commands are executed w
 create schema dbt_db.dbt_schema;
 ```
 Creates a schema named dbt_schema within the dbt_db database. The schema is used to organize tables and other objects within the database.
+### The display and result in Snowflake are as follows:
 ![setup-env-in-snowflake](documentations/setup-env-in-snowflake.png)
 
 

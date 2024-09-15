@@ -333,7 +333,85 @@ Run the following command to execute the models and perform tests:
 dbt run && dbt test
 ```
 
+## PART 9: Deploy Models Using Airflow
+1. Before you run the Astro CLI you need to [download](https://github.com/astronomer/astro-cli/releases) the installer and add the installer path to your local environment variables.
+2. The next part is to navigate one directory up from the `data_pipeline` directory, then create a new folder named `dbt_dag`.
+    ```
+    cd ..
+    mkdir dbt-dag
+    cd dbt-dag
+    ```
+3. Create an Astro project
+    ```
+    astro dev init
+    ```
+This command generates all of the project files you need to run Airflow locally, including example DAGs that you can run out of the box.
+Before running Airflow, it defaults to running on `localhost:8080`, but you can set the port to your preference. In the `.astro` folder, locate the `config.yml` file. Here, the PostgreSQL port is set to `5455`, and the Airflow port is set to `8081`, so you will use `localhost:8081` to access Airflow.
+```
+project:
+  name: dbt-dag
+webserver:
+  port: 8081
+postgres:
+  port: 5455
+```
+4. Run Airflow locally
+Before you run Airflow locally you need to add the following command to the [dockerfile](dbt-dag/Dockerfile).
+```
+FROM quay.io/astronomer/astro-runtime:12.1.0
+
+RUN python -m venv dbt_venv && source dbt_venv/bin/activate && \
+    pip install --no-cache-dir dbt-snowflake && deactivate
+
+```
+5. To start running your project in a local Airflow environment, run the following command from your project directory:
+```
+astro dev start
+```
+6. After your project builds successfully, open the Airflow UI in your web browser at `https://localhost:8081/` with credetial.
+```
+username : admin
+password : admin
+```
+7. After logging in, click on Admin and then on Connections to create a connection between Airflow and Snowflake.
+
+![setup-connections-airflow-1](documentations/setup-connections-airflow-1.png)
+
+![setup-connections-airflow-2](documentations/setup-connections-airflow-2.png)
+
+8. In the `dags`, create a file named `dbt_dag.py` and add the following code:
+```
+import os
+from datetime import datetime
+
+from cosmos import DbtDag, ProjectConfig, ProfileConfig, ExecutionConfig
+from cosmos.profiles import SnowflakeUserPasswordProfileMapping
 
 
+profile_config = ProfileConfig(
+    profile_name="default",
+    target_name="dev",
+    profile_mapping=SnowflakeUserPasswordProfileMapping(
+        conn_id="snowflake_conn", 
+        profile_args={"database": "dbt_db", "schema": "dbt_schema"},
+    )
+)
 
+dbt_snowflake_dag = DbtDag(
+    project_config=ProjectConfig("/usr/local/airflow/dags/dbt/data_pipeline",),
+    operator_args={"install_deps": True},
+    profile_config=profile_config,
+    execution_config=ExecutionConfig(dbt_executable_path=f"{os.environ['AIRFLOW_HOME']}/dbt_venv/bin/dbt",),
+    schedule_interval="@daily",
+    start_date=datetime(2024, 9, 9),
+    catchup=False,
+    dag_id="dbt_dag",
+)
+```
+
+9. Next, copy the data_pipeline folder and paste it into the dags/dbt folder as shown below:
+![copy-data_pipeline-in-dags-folder](documentations/copy-data_pipeline-in-dags-folder.png)
+
+10. Trigger DAG
+![dags-airflow](documentations/dags-airflow.png)
 

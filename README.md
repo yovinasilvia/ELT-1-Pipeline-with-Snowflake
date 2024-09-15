@@ -58,6 +58,85 @@ Creates a schema named dbt_schema within the dbt_db database. The schema is used
 ### The display and result in Snowflake are as follows:
 ![setup-env-in-snowflake](documentations/setup-env-in-snowflake.png)
 
+## Step 2: Setup DBT Project
+
+### Create Project Directory
+Create a folder for our project; here, I named the project Project-Snowflake-DBT-Airflow
+```
+mkdir Project-Snowflake-DBT-Airflow
+```
+### Create and activate a virtual environment
+Move to Project-Snowflake-DBT-Airflow directory and create and activate virtual environment
+```
+cd Project-Snowflake-DBT-Airflow
+python -m venv .venv
+source .venv/Scripts/activate
+```
+### Install and Setup dbt
+Install dbt-snowflake
+```
+pip install dbt-snowflake
+```
+And also install dbt-core
+```
+pip install dbt-core
+```
+
+### Create and Setup DBT Project
+To create a dbt project, use dbt init. Here, we name our project data_pipeline. Run the following command:
+```
+dbt init data_pipeline
+```
+After that you will get some questions like the following picture:
+![dbt-init](documentations/dbt-init.png)
+
+![choose-snowflake-db](documentations/choose-snowflake-db.png)
+
+![choose-snowflake-db-settings](documentations/choose-snowflake-db-settings.png)
+
+Change to the data_pipeline directory.
+```
+cd data_pipeline
+```
+
+## Step 3: Setup DBT Profile
+By default, DBT will create a dbt profile at your home directory `~/.dbt/profiles.yml`
+You can update the profiles, or you can make a new dbt-profile directory.
+To make a new dbt-profie directory, you can invoke the following:
+```
+mkdir dbt-profiles
+touch dbt-profiles/profiles.yml
+export DBT_PROFILES_DIR=$(pwd)/dbt-profiles
+```
+
+Set profiles.yml as follow:
+```
+data_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: wi49229.us-central1.gcp # use your account locator
+      user: yovinasilvia # change it to your username
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}" 
+      role: dbt_role
+      database: dbt_db
+      warehouse: dbt_wh
+      schema: dbt_schema
+      threads: 10
+      client_session_keep_alive: False
+```
+
+![locator-snowflake](documentations/locator-snowflake.png)
+
+To find the account locator, navigate to the Admin section, then click on Accounts. Copy the locator shown in the locator section. For example, my account locator is: `https://wi49229.us-central1.gcp.snowflakecomputing.com`. 
+You should enter it in the profiles.yml file under the locator section like this: `wi49229.us-central1.gcp`
+
+And in the terminal, you can type the following:
+```
+export SNOWFLAKE_PASSWORD=<insert_your_actual_password>
+```
+Then, in the `profiles.yml`, you can enter your password as shown in the profiles.yml above like this one `password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"`
 
 
 

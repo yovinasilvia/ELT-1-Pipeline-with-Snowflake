@@ -1,0 +1,14 @@
+data_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: wi49229.us-central1.gcp # use your account locator
+      user: yovinasilvia # change it to your username
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}" 
+      role: dbt_role
+      database: dbt_db
+      warehouse: dbt_wh
+      schema: dbt_schema
+      threads: 10
+      client_session_keep_alive: False

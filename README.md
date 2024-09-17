@@ -412,7 +412,6 @@ dbt_snowflake_dag = DbtDag(
 9. Next, copy the data_pipeline folder and paste it into the dags/dbt folder as shown below:
 ![copy-data_pipeline-in-dags-folder](documentations/copy-data_pipeline-in-dags-folder.png)
 
-10. Trigger DAG
-After completing all the previous steps, trigger the DAG. If the DAG runs successfully, the Airflow UI will display the following:
+10. After completing all the previous steps, trigger the DAG. If the DAG runs successfully, the Airflow UI will display the following:
 ![dags-airflow](documentations/dags-airflow.png)
 
